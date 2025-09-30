@@ -1,4 +1,4 @@
-API java com Spring Boot - Sprint 2 TAP
+API java com Spring Boot - Sprint 1, 2, 3 TAP
 - Para acessar o banco de dados (http://localhost:8080/h2-console/)
 - Os endereços dos EndPoint
   - Para cada classe(/operadores), (/produtos), (/equipamentos)
