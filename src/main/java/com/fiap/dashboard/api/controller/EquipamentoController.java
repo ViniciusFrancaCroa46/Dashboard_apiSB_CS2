@@ -1,6 +1,7 @@
 package com.fiap.dashboard.api.controller;
 
-import com.fiap.dashboard.api.model.Equipamento;
+import com.fiap.dashboard.api.dto.EquipamentoRequest;
+import com.fiap.dashboard.api.dto.EquipamentoResponse;
 import com.fiap.dashboard.api.service.EquipamentoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -15,28 +16,34 @@ public class EquipamentoController {
     @Autowired
     private EquipamentoService equipamentoService;
 
-    @PostMapping("/registrar")
-    public Equipamento registrar(@RequestBody Equipamento equipamento) {
-        return equipamentoService.salvar(equipamento);
+    // Criar novo equipamento
+    @PostMapping
+    public ResponseEntity<EquipamentoResponse> registrar(@RequestBody EquipamentoRequest dto) {
+        EquipamentoResponse response = equipamentoService.salvar(dto);
+        return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/listar")
-    public List<Equipamento> listarTodos() {
-        return equipamentoService.listarTodos();
+    // Listar todos
+    @GetMapping
+    public ResponseEntity<List<EquipamentoResponse>> listarTodos() {
+        List<EquipamentoResponse> equipamentos = equipamentoService.listarTodos();
+        return ResponseEntity.ok(equipamentos);
     }
 
-    @GetMapping("/listar/{id}")
-    public ResponseEntity<?> buscarPorId(@PathVariable Long id) {
-        Equipamento equipamento = equipamentoService.buscarPorId(id);
+    // Buscar por ID
+    @GetMapping("/{id}")
+    public ResponseEntity<EquipamentoResponse> buscarPorId(@PathVariable Long id) {
+        EquipamentoResponse equipamento = equipamentoService.buscarPorId(id);
         if (equipamento == null) {
             return ResponseEntity.notFound().build();
         }
         return ResponseEntity.ok(equipamento);
     }
 
-    @DeleteMapping("/listar/{id}")
+    // Deletar por ID
+    @DeleteMapping("/{id}")
     public ResponseEntity<String> deletar(@PathVariable Long id) {
-        Equipamento equipamento = equipamentoService.buscarPorId(id);
+        EquipamentoResponse equipamento = equipamentoService.buscarPorId(id);
         if (equipamento == null) {
             return ResponseEntity.status(404).body("Equipamento não encontrado.");
         }
@@ -44,9 +51,10 @@ public class EquipamentoController {
         return ResponseEntity.ok("Equipamento deletado com sucesso.");
     }
 
-    @PutMapping("/listar/{id}/status")
-    public ResponseEntity<String> atualizarStatus(@PathVariable Long id, @RequestBody int novoStatus) {
-        boolean atualizado = equipamentoService.atualizarStatus(id, novoStatus);
+    // Atualizar status
+    @PatchMapping("/{id}/status")
+    public ResponseEntity<String> atualizarStatus(@PathVariable Long id, @RequestBody EquipamentoRequest request) {
+        boolean atualizado = equipamentoService.atualizarStatus(id, request.getStatus());
         if (!atualizado) {
             return ResponseEntity.status(404).body("Equipamento não encontrado.");
         }

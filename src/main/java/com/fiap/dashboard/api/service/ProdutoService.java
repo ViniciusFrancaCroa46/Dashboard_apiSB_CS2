@@ -1,36 +1,51 @@
 package com.fiap.dashboard.api.service;
 
+import com.fiap.dashboard.api.dto.ProdutoRequest;
+import com.fiap.dashboard.api.dto.ProdutoResponse;
 import com.fiap.dashboard.api.model.Produto;
 import com.fiap.dashboard.api.repository.ProdutoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class ProdutoService {
     @Autowired
     private ProdutoRepository produtoRepository;
 
-    public Produto salvarProduto(Produto produto) {
-        double r = produto.getRota();
+    public ProdutoResponse salvarProduto(ProdutoRequest dto) {
+        Produto produto = new Produto();
+        produto.setId(dto.getId());
+        produto.setSetor(dto.getSetor());
+        produto.setDataSaida(dto.getDataSaida());
+        produto.setStatus(dto.getStatus());
+        produto.setRota(dto.getRota());
 
+        // regra do status
+        double r = produto.getRota();
         if (r >= 1 && r <= 3.5) {
             produto.setStatus("em movimento");
         } else if (r == 4) {
             produto.setStatus("entregue");
         }
 
-        return produtoRepository.save(produto);
+        Produto salvo = produtoRepository.save(produto);
+        return toResponse(salvo);
     }
 
-
-    public List<Produto> listarTodos() {
-        return produtoRepository.findAll();
+    public List<ProdutoResponse> listarTodos() {
+        return produtoRepository.findAll()
+                .stream()
+                .map(this::toResponse)
+                .collect(Collectors.toList());
     }
 
-    public Produto buscarPorId(String id) {
-        return produtoRepository.findById(id).orElse(null);
+    public ProdutoResponse buscarPorId(String id) {
+        return produtoRepository.findById(id)
+                .map(this::toResponse)
+                .orElse(null);
     }
 
     public void deletarPorId(String id) {
@@ -38,21 +53,29 @@ public class ProdutoService {
     }
 
     public boolean atualizarRota(String id, double novaRota) {
-        Produto produto = buscarPorId(id);
-
+        Produto produto = produtoRepository.findById(id).orElse(null);
         if (produto == null) {
             return false;
         }
-        produto.setRota(novaRota);
 
-        // Atualiza o status baseado na nova rota
+        produto.setRota(novaRota);
         if (novaRota >= 1 && novaRota <= 3.5) {
             produto.setStatus("em movimento");
         } else if (novaRota == 4.0) {
             produto.setStatus("entregue");
         }
 
-        salvarProduto(produto);
+        produtoRepository.save(produto);
         return true;
+    }
+
+    private ProdutoResponse toResponse(Produto produto) {
+        return new ProdutoResponse(
+                produto.getId(),
+                produto.getSetor(),
+                produto.getDataSaida(),
+                produto.getStatus(),
+                produto.getRota()
+        );
     }
 }

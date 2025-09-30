@@ -1,6 +1,7 @@
 package com.fiap.dashboard.api.controller;
 
-import com.fiap.dashboard.api.model.Produto;
+import com.fiap.dashboard.api.dto.ProdutoRequest;
+import com.fiap.dashboard.api.dto.ProdutoResponse;
 import com.fiap.dashboard.api.service.ProdutoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -20,23 +21,28 @@ public class ProdutoController {
     }
 
     @PostMapping("/registrar")
-    public Produto registrarProduto(@RequestBody Produto produto) {
-        return produtoService.salvarProduto(produto);
+    public ProdutoResponse registrarProduto(@RequestBody ProdutoRequest dto) {
+        return produtoService.salvarProduto(dto);
     }
 
     @GetMapping("/listar")
-    public List<Produto> listarProdutos() {
+    public List<ProdutoResponse> listarProdutos() {
         return produtoService.listarTodos();
     }
 
     @GetMapping("/listar/{id}")
-    public Produto buscarProduto(@PathVariable String id) {
-        return produtoService.buscarPorId(id);
+    public ResponseEntity<?> buscarProduto(@PathVariable String id) {
+        ProdutoResponse produto = produtoService.buscarPorId(id);
+        if (produto == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("Produto com ID " + id + " não encontrado.");
+        }
+        return ResponseEntity.ok(produto);
     }
 
     @DeleteMapping("/listar/{id}")
     public ResponseEntity<String> deletarProduto(@PathVariable String id) {
-        Produto produto = produtoService.buscarPorId(id);
+        ProdutoResponse produto = produtoService.buscarPorId(id);
         if (produto == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body("Produto com ID " + id + " não encontrado.");
@@ -54,5 +60,4 @@ public class ProdutoController {
         }
         return ResponseEntity.ok("Rota atualizada com sucesso.");
     }
-
 }

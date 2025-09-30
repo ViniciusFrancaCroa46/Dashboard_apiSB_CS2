@@ -1,5 +1,7 @@
 package com.fiap.dashboard.api.controller;
 
+import com.fiap.dashboard.api.dto.OperadorRequest;
+import com.fiap.dashboard.api.dto.OperadorResponse;
 import com.fiap.dashboard.api.model.Operador;
 import com.fiap.dashboard.api.service.OperadorService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,32 +17,26 @@ public class OperadorController {
     @Autowired
     private OperadorService operadorService;
 
-    public OperadorController(OperadorService operadorService) {
-        this.operadorService = operadorService;
-    }
-
-
     @PostMapping("/registrar")
-    public Operador registrarOperador(@RequestBody Operador operador) {
-        return operadorService.salvarOperador(operador);
+    public OperadorResponse registrarOperador(@RequestBody OperadorRequest dto) {
+        return operadorService.salvarOperador(dto);
     }
 
     @GetMapping("/listar")
-    public ResponseEntity<List<Operador>> listar() {
-        List<Operador> operador = operadorService.listarOperador();
-        return ResponseEntity.ok(operador);
+    public ResponseEntity<List<OperadorResponse>> listar() {
+        return ResponseEntity.ok(operadorService.listarOperador());
     }
 
     @GetMapping("/listar/{id}")
-    public ResponseEntity<Operador> buscarPorId(@PathVariable Long id) {
+    public ResponseEntity<OperadorResponse> buscarPorId(@PathVariable Long id) {
         return operadorService.buscarOperadorPorId(id)
-                .map (ResponseEntity::ok)
+                .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @DeleteMapping("listar/{id}")
+    @DeleteMapping("/listar/{id}")
     public ResponseEntity<Void> deletarOperador(@PathVariable Long id) {
-        if(operadorService.buscarOperadorPorId(id).isPresent()){
+        if (operadorService.buscarOperadorPorId(id).isPresent()) {
             operadorService.deletarPorId(id);
             return ResponseEntity.ok().build();
         } else {
@@ -49,8 +45,8 @@ public class OperadorController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestBody Operador operador) {
-        boolean autenticado = operadorService.autenticar(operador.getEmail(), operador.getSenha());
+    public ResponseEntity<String> login(@RequestBody OperadorRequest dto) {
+        boolean autenticado = operadorService.autenticar(dto.getEmail(), dto.getSenha());
         if (autenticado) {
             return ResponseEntity.ok("Login realizado com sucesso!");
         } else {
